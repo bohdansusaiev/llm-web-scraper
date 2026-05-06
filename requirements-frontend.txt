@@ -1,0 +1,5 @@
+streamlit
+httpx
+pydantic
+python-dotenv
+bcrypt
