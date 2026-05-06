@@ -12,7 +12,7 @@ source .venv/bin/activate
 pip install --upgrade pip -q
 
 echo "[3/4] Installing dependencies..."
-pip install -r requirements.txt -q
+pip install -r requirements-backend.txt -q
 
 echo "[4/4] Installing Playwright Chromium browser for Crawl4AI..."
 python3 -m playwright install chromium --with-deps

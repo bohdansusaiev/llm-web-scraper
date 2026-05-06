@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+crawl4ai
+streamlit
+pydantic
+python-dotenv
+httpx
+langchain-community
+bcrypt
