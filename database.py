@@ -1,7 +1,12 @@
 import sqlite3
-import hashlib
 import json
 from pathlib import Path
+
+try:
+    import bcrypt
+    HAS_BCRYPT = True
+except ImportError:
+    HAS_BCRYPT = False
 
 DB_PATH = Path(__file__).parent / "scraper.db"
 
@@ -35,10 +40,34 @@ def init_db():
     conn.close()
 
 
+def _hash_password(password: str) -> str:
+    if HAS_BCRYPT:
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    import hashlib
+    import secrets
+    salt = secrets.token_hex(16)
+    pwd_hash = hashlib.scrypt(password.encode(), salt=salt.encode(), n=16384, r=8, p=1, dklen=64)
+    return f"scrypt${salt}${pwd_hash.hex()}"
+
+
+def _verify_password(password: str, stored: str) -> bool:
+    if HAS_BCRYPT and not stored.startswith("scrypt$"):
+        try:
+            return bcrypt.checkpw(password.encode(), stored.encode())
+        except Exception:
+            return False
+    if stored.startswith("scrypt$"):
+        import hashlib
+        _, salt, pwd_hash = stored.split("$")
+        result = hashlib.scrypt(password.encode(), salt=salt.encode(), n=16384, r=8, p=1, dklen=64)
+        return result.hex() == pwd_hash
+    return False
+
+
 def register_user(username: str, password: str) -> bool:
     conn = get_conn()
     try:
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        password_hash = _hash_password(password)
         conn.execute(
             "INSERT INTO users (username, password_hash) VALUES (?, ?)",
             (username, password_hash),
@@ -53,13 +82,14 @@ def register_user(username: str, password: str) -> bool:
 
 def login_user(username: str, password: str):
     conn = get_conn()
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
     user = conn.execute(
-        "SELECT id, username FROM users WHERE username = ? AND password_hash = ?",
-        (username, password_hash),
+        "SELECT id, username, password_hash FROM users WHERE username = ?",
+        (username,),
     ).fetchone()
     conn.close()
-    return dict(user) if user else None
+    if user and _verify_password(password, user["password_hash"]):
+        return {"id": user["id"], "username": user["username"]}
+    return None
 
 
 def save_history(user_id: int, url: str, result: dict):

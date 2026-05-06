@@ -1,5 +1,6 @@
+.venv/
 .env
+scraper.db
 __pycache__/
 *.pyc
-scraper.db
-.venv/
+.DS_Store
