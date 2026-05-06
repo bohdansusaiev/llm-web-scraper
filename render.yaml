@@ -2,7 +2,7 @@ services:
   - type: web
     name: llm-scraper-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt && python3 -m playwright install chromium --with-deps
+    buildCommand: pip install -r requirements.txt && python3 -m playwright install chromium
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DEEPSEEK_API_KEY
