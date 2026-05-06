@@ -28,7 +28,7 @@ st.set_page_config(page_title="Adaptive Web Scraper", page_icon="🌐", layout="
 lang_cols = st.columns([8, 1, 1])
 with lang_cols[2]:
     selected_lang = st.selectbox(
-        "",
+        "🌐",
         options=["ua", "en"],
         format_func=lambda x: "UA" if x == "ua" else "EN",
         label_visibility="collapsed",
