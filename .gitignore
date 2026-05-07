@@ -4,3 +4,6 @@ scraper.db
 __pycache__/
 *.pyc
 .DS_Store
+frontend/node_modules/
+frontend/build/
+frontend/.svelte-kit/
