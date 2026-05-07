@@ -341,7 +341,7 @@ elif st.session_state.page == "about" and st.session_state.user:
     with st.container(border=True):
         st.markdown(f"Студент групи {lang['about_author_group']} — {lang['about_author_name']}")
         st.markdown(lang["about_author_institute"])
-        st.markdown(f"**Спеціальність:** {lang['about_author_specialty']}")
+        st.markdown(f"Спеціальність: {lang['about_author_specialty']}")
 
 st.markdown("---")
 st.caption(lang["footer"])

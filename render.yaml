@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: llm-scraper-backend
-    runtime: image
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - key: DEEPSEEK_API_KEY
-        sync: false
