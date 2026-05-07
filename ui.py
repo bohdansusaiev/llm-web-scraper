@@ -353,5 +353,4 @@ elif st.session_state.page == "about" and st.session_state.user:
         st.markdown(lang["about_author_institute"])
         st.markdown(f"Спеціальність: {lang['about_author_specialty']}")
 
-st.markdown("---")
-st.caption(lang["footer"])
+
