@@ -25,24 +25,25 @@ lang = UA if st.session_state.language == "ua" else EN
 
 st.set_page_config(page_title="Adaptive Web Scraper", page_icon="🌐", layout="centered")
 
-lang_cols = st.columns([8, 1, 1])
-with lang_cols[2]:
-    selected_lang = st.selectbox(
-        "🌐",
+def _render_language_selector():
+    sel = st.radio(
+        label="🌐",
         options=["ua", "en"],
-        format_func=lambda x: "UA" if x == "ua" else "EN",
+        format_func=lambda x: "Українська" if x == "ua" else "English",
+        horizontal=True,
+        index=0 if st.session_state.language == "ua" else 1,
         label_visibility="collapsed",
     )
-    if selected_lang != st.session_state.language:
+    if sel != st.session_state.language:
         if st.session_state.last_result:
             st.toast(
                 ("Мову змінено. Скрапіть сторінку ще раз, "
                  "щоб отримати вміст Українською.")
-                if selected_lang == "ua"
+                if sel == "ua"
                 else ("Language changed. Scrape again "
                       "to get content in English.")
             )
-        st.session_state.language = selected_lang
+        st.session_state.language = sel
         st.session_state.last_result = None
         st.rerun()
 
@@ -65,6 +66,15 @@ if st.session_state.user:
             st.session_state.page = "login"
             st.session_state.last_result = None
             st.rerun()
+        st.markdown("---")
+        st.markdown(f"**{lang['language']}:**")
+        _render_language_selector()
+
+else:
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown(f"**{lang['language']}:**")
+        _render_language_selector()
 
 if not st.session_state.user:
     if st.session_state.page == "register":
