@@ -86,24 +86,6 @@ app/
 frontend/                 SvelteKit — Research / Catalogs / Scrape / Benchmark / About
 ```
 
-## Endpoints
-
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/auth/register`, `/auth/login` | Account creation and login. |
-| `POST` | `/research` | Start a research job. Returns `{job_id}`. |
-| `GET`  | `/research/{job_id}` | Poll status + progress + saved catalog id. |
-| `GET`  | `/research` | Recent jobs for current user. |
-| `GET`  | `/catalogs` | List user's catalogs. |
-| `GET`  | `/catalogs/{id}` | Full catalog (papers + stats). |
-| `DELETE` | `/catalogs/{id}` | Delete catalog. |
-| `GET`  | `/export/{catalog_id}?format=json\|csv\|bibtex` | Export. |
-| `POST` | `/scrape` | Generic LLM extraction (URL + JSON schema + instruction). |
-| `POST` | `/benchmark` | LLM vs classical on one URL. |
-| `POST` | `/benchmark/batch` | LLM vs classical on many URLs. |
-
-All authenticated endpoints require `X-User-Id: <id>` header (returned by `/auth/login`).
-
 ## Stack
 
 - **Python + FastAPI** — async backend
@@ -113,7 +95,3 @@ All authenticated endpoints require `X-User-Id: <id>` header (returned by `/auth
 - **trafilatura + BeautifulSoup** — classical baseline for the benchmark
 - **SQLite** — local store for catalogs, jobs, and the URL+schema extraction cache
 - **SvelteKit** — frontend with EN/UA i18n
-
-## Author
-
-Bohdan Susaiev · TV-21 · Software Engineering · Institute of Atomic and Thermal Energy.
