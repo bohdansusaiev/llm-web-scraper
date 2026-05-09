@@ -22,9 +22,6 @@
     $: if (browser && !isLoggedIn && !isAuthPage) {
         goto('/');
     }
-    $: if (browser && isLoggedIn && isAuthPage) {
-        goto('/research');
-    }
 </script>
 
 <svelte:head>
@@ -32,7 +29,7 @@
 </svelte:head>
 
 <div style="display: contents" data-theme={browser ? currentTheme : undefined}>
-    {#if isLoggedIn}
+    {#if isLoggedIn && !isLanding}
         <div id="app-root">
             <Sidebar />
             <div id="content">
@@ -107,6 +104,9 @@
         bottom: 24px;
         left: 24px;
         z-index: 50;
+        background: var(--sidebar-bg);
+        border-radius: var(--border-radius);
+        padding: var(--sidebar-inner-padding);
     }
 
     @media screen and (max-width: 600px) {

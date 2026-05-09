@@ -6,7 +6,6 @@
 
 <div class="hero">
     <div class="inner">
-        <img src="/logo.svg" alt="LLM-Scraper" class="logo" />
         <h1>{t('app_subtitle')}</h1>
         <p class="desc">{t('app_desc')}</p>
 
@@ -33,12 +32,6 @@
         text-align: center;
         max-width: 560px;
         gap: 0;
-    }
-
-    .logo {
-        width: 90px;
-        height: auto;
-        margin-bottom: 24px;
     }
 
     h1 {
