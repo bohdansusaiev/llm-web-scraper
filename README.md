@@ -19,98 +19,101 @@ the LLM returns structured data.
 
 ## Why it's "adaptive"
 
-Classical scrapers use CSS selectors, which break when site layout changes and
-need per-site configuration. This system extracts clean markdown with Crawl4AI
-and lets the LLM extract data semantically. **One implementation handles arXiv,
-PubMed Central, publisher pages, university repositories, and any URL the user
-points it at — without code changes.**
+Classical scrapers rely on CSS selectors. They break the moment a site redesigns,
+and you need a separate config for every domain. This project takes a different
+approach: Crawl4AI renders the page and converts it to clean markdown, then
+DeepSeek reads that markdown and extracts whatever fields you ask for.
 
-The included `POST /benchmark` endpoint quantifies the gain: classical extraction
-typically gets 4–5/9 fields with broken author parsing; LLM extraction gets 8/9
-including methodology and conclusions that classical methods cannot infer at all.
+The result is that **one implementation works on arXiv, PubMed Central, journal
+pages, university repositories, and anything else** — without touching the code.
+If the site changes its layout, nothing breaks. If you point it at a completely
+new domain, it just works.
 
-## Run locally
+The `POST /benchmark` endpoint makes this concrete: classical extraction typically
+recovers 4–5 out of 9 fields with broken author parsing, while LLM extraction
+gets 8–9 including methodology and conclusions that pattern matching can't reach.
+
+## Running locally
 
 ```bash
 # Backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # add your DEEPSEEK_API_KEY
+cp .env.example .env   # fill in DEEPSEEK_API_KEY
 uvicorn app.main:app --reload --port 8000
 
 # Frontend (separate terminal)
 cd frontend
 npm install
-npm run dev  # http://localhost:5173
+npm run dev   # → http://localhost:5173
 ```
 
-Open http://localhost:5173, register an account, and start a research job.
+Register an account, pick a research topic, and the pipeline runs in the
+background while you watch the progress bar.
 
-## Project layout
+## How the code is organized
+
+The backend is split by responsibility rather than by feature, so it's easier
+to follow each phase of the pipeline separately.
 
 ```
 app/
-  main.py                 FastAPI entry point
-  config.py               env vars, model config, pipeline tuning
-  models/                 Pydantic schemas (request/response + domain)
-    catalog.py            ScientificPaper, ScientificCatalog, ResearchRequest
-    discovery.py          DiscoveredPaper (raw API output)
-    extraction.py         GenericExtractRequest/Response
-    benchmark.py          BenchmarkRequest, ScraperResult, etc.
-    jobs.py               ResearchJob status tracking
-    auth.py
-  routers/                FastAPI routes — thin, no business logic
-    auth.py, scrape.py, research.py, catalogs.py, benchmark.py, export.py
-  core/                   Generic LLM extraction engine — heart of the diploma
-    crawler.py            Crawl4AI wrapper (URL -> markdown)
-    llm_extractor.py      Schema-driven extract via DeepSeek-chat
-    prompts.py            Prompt templates
+  core/                   The main idea — URL → markdown → structured data
+    crawler.py            Crawl4AI wrapper, falls back to Jina Reader if needed
+    llm_extractor.py      Schema-driven extraction via DeepSeek-chat
+    prompts.py            All prompt templates in one place
+
   services/
-    discovery/            Phase 1 — scientific API clients
-      openalex.py, crossref.py, semantic_scholar.py, aggregator.py
-    extraction/           Phase 2 — LLM relevance scoring + deep extraction
-      relevance.py, paper_extractor.py, translator.py
-    pipeline.py           Phase 1 + 2 + Translation orchestration
-    generic_extract.py    Service for POST /scrape
-    classical_scraper.py  trafilatura+BS4 baseline
-    benchmark.py          Side-by-side LLM vs classical
-  db/                     SQLite layer
-    schema.py, connection.py, users.py, catalogs.py, jobs.py, cache.py
+    discovery/            Phase 1 — pull candidates from scientific APIs
+      openalex.py, semantic_scholar.py, arxiv.py, core.py, crossref.py
+      aggregator.py       runs them in parallel, dedupes by DOI
+    extraction/           Phase 2 — filter and extract
+      relevance.py        LLM scores each paper 0–10 against the topic
+      paper_extractor.py  deep extraction for papers that pass the filter
+      translator.py       optional Ukrainian translation pass
+    pipeline.py           wires Phase 1 + 2 + translation into one job
+    generic_extract.py    the POST /scrape service
+    classical_scraper.py  trafilatura + BeautifulSoup baseline
+    benchmark.py          runs both and formats the comparison
+
+  routers/                thin HTTP layer — no business logic here
+  models/                 Pydantic schemas
+  db/                     SQLite (catalogs, jobs, users, extraction cache)
   utils/
-    dedupe.py             DOI / title normalization
-    exporters.py          JSON / CSV / BibTeX
-frontend/                 SvelteKit — Research / Catalogs / Scrape / Benchmark / About
+    dedupe.py             normalizes DOIs and titles before deduplication
+    exporters.py          JSON / CSV / BibTeX writers
+
+frontend/                 SvelteKit app — Research, Catalogs, Scrape, Benchmark, About
 ```
 
-## Endpoints
+## API
 
-| Method | Path | Purpose |
+| Method | Path | What it does |
 |---|---|---|
-| `POST` | `/auth/register`, `/auth/login` | Account creation and login. |
-| `POST` | `/research` | Start a research job. Returns `{job_id}`. |
-| `GET`  | `/research/{job_id}` | Poll status + progress + saved catalog id. |
-| `GET`  | `/research` | Recent jobs for current user. |
-| `GET`  | `/catalogs` | List user's catalogs. |
-| `GET`  | `/catalogs/{id}` | Full catalog (papers + stats). |
-| `DELETE` | `/catalogs/{id}` | Delete catalog. |
-| `GET`  | `/export/{catalog_id}?format=json\|csv\|bibtex` | Export. |
-| `POST` | `/scrape` | Generic LLM extraction (URL + JSON schema + instruction). |
-| `POST` | `/benchmark` | LLM vs classical on one URL. |
-| `POST` | `/benchmark/batch` | LLM vs classical on many URLs. |
+| `POST` | `/auth/register`, `/auth/login` | create account / get user id |
+| `POST` | `/research` | start a pipeline job, returns `{job_id}` |
+| `GET`  | `/research/{job_id}` | poll progress and result |
+| `GET`  | `/catalogs` | list saved catalogs |
+| `GET`  | `/catalogs/{id}` | full catalog with all papers |
+| `DELETE` | `/catalogs/{id}` | delete it |
+| `GET`  | `/export/{id}?format=json\|csv\|bibtex` | download catalog |
+| `POST` | `/scrape` | extract structured data from any URL |
+| `POST` | `/benchmark` | compare LLM vs classical on one URL |
+| `POST` | `/benchmark/batch` | same, across multiple URLs |
 
-All authenticated endpoints require `X-User-Id: <id>` header (returned by `/auth/login`).
+Authenticated endpoints use `X-User-Id: <id>` (returned by `/auth/login`).
 
 ## Stack
 
-- **Python + FastAPI** — async backend.
-- **Crawl4AI** — JS rendering and HTML→markdown conversion.
-- **DeepSeek-chat** — LLM (\$0.27/\$1.10 per 1M tokens; ~\$0.025 per research query).
-- **OpenAlex / Crossref / Semantic Scholar** — open scientific APIs.
-- **trafilatura + BeautifulSoup** — classical baseline for the benchmark.
-- **SQLite** — local store for catalogs, jobs, and the URL+schema extraction cache.
-- **SvelteKit** — frontend with EN/UA i18n.
+- **FastAPI** — async Python backend
+- **Crawl4AI + Jina Reader** — JS-rendered page → clean markdown (Jina as fallback)
+- **DeepSeek-chat** — cheap and capable (~$0.025 per full research job)
+- **OpenAlex / Semantic Scholar / arXiv / CORE** — open-access scientific APIs
+- **trafilatura + BeautifulSoup** — classical baseline for the benchmark
+- **SQLite** — stores catalogs, job queue, and a URL+schema extraction cache
+- **SvelteKit** — frontend with EN/UA i18n, dark/light theme
 
 ## Author
 
-Bohdan Susaiev · TV-21 · Software Engineering · Institute of Atomic and Thermal Energy.
+Bohdan Susaiev
