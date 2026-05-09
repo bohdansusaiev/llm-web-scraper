@@ -12,7 +12,7 @@
     async function handleLogin() {
         error = '';
         loading = true;
-        try { const user = await login(username, password); auth.login(user); goto('/dashboard'); }
+        try { const user = await login(username, password); auth.login(user); goto('/research'); }
         catch (e: any) { error = e.message || t('login_failed'); }
         loading = false;
     }

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 232">
+  <!-- Dark corner visible behind page curl -->
+  <path d="M162,232 L210,232 L210,184 Q197,232 162,232 Z" fill="#14141E"/>
+
+  <!-- Browser chrome bar (rounded top corners) -->
+  <path d="M14,0 L196,0 Q210,0 210,14 L210,52 L0,52 L0,14 Q0,0 14,0 Z" fill="#3A4BA0"/>
+
+  <!-- White content area clipped for page curl -->
+  <path d="M0,52 L210,52 L210,184 Q196,230 162,232 L0,232 Z" fill="white"/>
+
+  <!-- Page curl flap (back of page, periwinkle-gray) -->
+  <path d="M210,184 Q196,230 162,232 Q184,220 210,184 Z" fill="#C4CCE2"/>
+
+  <!-- Window control dots -->
+  <circle cx="22" cy="26" r="11" fill="#5D6EAA"/>
+  <circle cx="46" cy="26" r="11" fill="#6878B4"/>
+
+  <!-- URL bar -->
+  <rect x="70" y="15" width="128" height="22" rx="11" fill="#4452A6"/>
+
+  <!-- Globe icon inside URL bar -->
+  <circle cx="86" cy="26" r="8"  fill="none" stroke="white" stroke-width="1.8"/>
+  <line  x1="86" y1="18"  x2="86" y2="34"  stroke="white" stroke-width="1.2"/>
+  <line  x1="78" y1="26"  x2="94" y2="26"  stroke="white" stroke-width="1.2"/>
+  <path  d="M80,21 Q86,24.5 92,21" fill="none" stroke="white" stroke-width="1.1"/>
+  <path  d="M80,31 Q86,27.5 92,31" fill="none" stroke="white" stroke-width="1.1"/>
+
+  <!-- ── Content lines ── -->
+
+  <!-- Row 1 · blue, full width -->
+  <rect x="14" y="68"  width="155" height="13" rx="6.5" fill="#A3AECE"/>
+
+  <!-- Row 2 · yellow + dot + blue -->
+  <rect x="14"  y="94"  width="96"  height="13" rx="6.5" fill="#C9A030"/>
+  <rect x="108" y="94"  width="62"  height="13" rx="6.5" fill="#A3AECE"/>
+  <circle cx="110" cy="100.5" r="9" fill="#C9A030"/>
+
+  <!-- Row 3 · blue, slightly shorter -->
+  <rect x="14" y="120" width="138" height="13" rx="6.5" fill="#A3AECE"/>
+
+  <!-- Row 4 · yellow + dot + blue -->
+  <rect x="14" y="146" width="76"  height="13" rx="6.5" fill="#C9A030"/>
+  <rect x="86" y="146" width="50"  height="13" rx="6.5" fill="#A3AECE"/>
+  <circle cx="88"  cy="152.5" r="9" fill="#C9A030"/>
+
+  <!-- Row 5 · blue -->
+  <rect x="14" y="168" width="122" height="13" rx="6.5" fill="#A3AECE"/>
+
+  <!-- Row 6 · blue, shorter -->
+  <rect x="14" y="188" width="84"  height="13" rx="6.5" fill="#A3AECE"/>
+
+  <!-- Row 7 · yellow + dot (partially behind curl) -->
+  <rect x="14" y="208" width="116" height="13" rx="6.5" fill="#C9A030"/>
+  <circle cx="130" cy="214.5" r="9" fill="#C9A030"/>
+
+  <!-- Row 8 · blue, fading behind curl -->
+  <rect x="14" y="222" width="105" height="10" rx="5" fill="#A3AECE" opacity="0.35"/>
+
+  <!-- Sparkle star in dark corner -->
+  <path d="M197,224 L199,219 L201,224 L206,226 L201,228 L199,233 L197,228 L192,226 Z"
+        fill="#404060"/>
+</svg>

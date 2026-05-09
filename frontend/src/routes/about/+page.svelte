@@ -1,103 +1,86 @@
 <script lang="ts">
     import { t } from '$lib/i18n';
+
+    const techs: { id: string, label: string }[] = [
+        { id: 'python',      label: 'Python + FastAPI' },
+        { id: 'crawl4ai',    label: 'Crawl4AI + Jina Reader' },
+        { id: 'deepseek',    label: 'DeepSeek-chat' },
+        { id: 'openalex',    label: 'OpenAlex · Semantic Scholar · arXiv · CORE' },
+        { id: 'trafilatura', label: 'trafilatura + BeautifulSoup' },
+        { id: 'svelte',      label: 'SvelteKit' },
+        { id: 'sqlite',      label: 'SQLite' },
+    ];
 </script>
 
-<h1>{t('about_title')}</h1>
+<svelte:head><title>{t('about_title')} · LLM-Scraper</title></svelte:head>
 
-<section style="margin-bottom:32px">
-    <p class="subtext">{t('about_value_prop')}</p>
+<h1>{t('about_title')}</h1>
+<p class="subtitle">{t('about_subtitle')}</p>
+
+<section class="block">
+    <h3>{t('about_overview_title')}</h3>
+    {#each t('about_overview_text').split('\n\n') as para}
+        <p class="text">{para}</p>
+    {/each}
 </section>
 
-<h3>{t('about_adaptivity_title')}</h3>
-<div class="text-content adaptivity">{t('about_adaptivity_text')}</div>
+<section class="block">
+    <h3>{t('about_pipeline_title')}</h3>
+    <p class="text">{t('about_pipeline_text')}</p>
+</section>
 
-<h3 style="margin-top:32px">{t('about_how_title')}</h3>
-<div class="steps">
-    <div class="step"><span class="step-num">1</span><span>{t('about_how_1_desc')}</span></div>
-    <div class="step"><span class="step-num">2</span><span>{t('about_how_2_desc')}</span></div>
-    <div class="step"><span class="step-num">3</span><span>{t('about_how_3_desc')}</span></div>
-</div>
+<section class="block">
+    <h3>{t('about_features_title')}</h3>
+    <p class="text">{t('about_features_text')}</p>
+</section>
 
-<h3 style="margin-top:32px">{t('about_compare_title')}</h3>
-<div class="card" style="margin-bottom:var(--padding);padding:var(--padding);border-left:3px solid var(--red)">
-    <p class="subtext">{t('about_compare_old')}</p>
-</div>
-<div class="card" style="padding:var(--padding);border-left:3px solid var(--green)">
-    <p class="subtext">{t('about_compare_new')}</p>
-</div>
+<section class="block">
+    <h3>{t('about_tech_title')}</h3>
+    <div class="tech-grid">
+        {#each techs as tech}
+            <div class="tech-row">
+                <span class="tech-name">{tech.label}</span>
+                <span class="tech-desc">{t(`about_tech_${tech.id}`)}</span>
+            </div>
+        {/each}
+    </div>
+</section>
 
-<h3 style="margin-top:32px">{t('about_features_title')}</h3>
-<div class="features">
-    {#each [1,2,3,4,5,6,7,8] as i}
-        <span>{i}. {t(`about_feature_${i}`)}</span>
-    {/each}
-</div>
-
-<h3 style="margin-top:32px">{t('about_tech_title')}</h3>
-<div class="tech-grid">
-    {#each ['python', 'crawl4ai', 'deepseek', 'svelte', 'sqlite'] as tech}
-        <div class="card">
-            <h4>{tech === 'python' ? 'Python + FastAPI' : tech === 'crawl4ai' ? 'Crawl4AI' : tech === 'deepseek' ? 'DeepSeek V4' : tech === 'svelte' ? 'SvelteKit' : 'SQLite'}</h4>
-            <p class="subtext">{t(`about_tech_detail_${tech}`)}</p>
-        </div>
-    {/each}
-</div>
-
-<h3 style="margin-top:32px">{t('about_author_title')}</h3>
-<div class="card">
-    <p class="subtext">{t('about_author_name')}</p>
-    <p class="subtext">{t('about_author_group')} &middot; {t('about_author_institute')}</p>
-    <p class="subtext">{t('about_author_specialty')}</p>
-    <p class="subtext" style="margin-top:var(--padding);color:var(--gray)">{t('about_purpose')}</p>
-    <p class="subtext" style="margin-top:4px;color:var(--gray)">{t('about_relevance')}</p>
-</div>
+<section class="block author-block" style="margin-top: 48px; padding-bottom: 32px;">
+    <h3>{t('about_author_title')}</h3>
+    <p class="text">{t('about_author_name')} · <a href="mailto:{t('about_author_contact')}">{t('about_author_contact')}</a></p>
+</section>
 
 <style>
-    .adaptivity {
+    h1 { margin-bottom: 6px; }
+    .subtitle {
+        font-size: 13px; color: var(--gray);
+        margin-bottom: 32px; font-weight: 400;
+    }
+    .block { margin-bottom: 32px; }
+    .block h3 { margin: 0 0 12px; font-size: 14px; }
+    .text {
+        font-size: 13.5px; line-height: 1.75; color: var(--secondary);
+        margin: 0 0 10px; max-width: 680px;
+    }
+    .text:last-child { margin-bottom: 0; }
+
+    .tech-grid { display: flex; flex-direction: column; gap: 8px; }
+    .tech-row {
+        display: flex; gap: 12px; align-items: baseline;
         font-size: 13px;
-        line-height: 1.7;
-        white-space: pre-line;
-        margin-top: var(--padding);
     }
-
-    .steps {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-top: var(--padding);
+    .tech-name {
+        min-width: 220px; font-weight: 500; color: var(--secondary);
+        flex-shrink: 0;
     }
+    .tech-desc { color: var(--gray); line-height: 1.5; }
 
-    .step {
-        display: flex;
-        gap: 12px;
-        font-size: 13px;
-        color: var(--gray);
-        align-items: baseline;
-    }
+    .author-block p { color: var(--secondary); }
+    .author-block a { color: var(--gray); }
 
-    .step-num {
-        color: var(--secondary);
-        font-weight: 500;
-        min-width: 16px;
-    }
-
-    .features {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        font-size: 13px;
-        color: var(--gray);
-        margin-top: var(--padding);
-    }
-
-    .tech-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-top: var(--padding);
-    }
-
-    .tech-grid .card h4 {
-        margin-bottom: 4px;
+    @media (max-width: 600px) {
+        .tech-row { flex-direction: column; gap: 2px; }
+        .tech-name { min-width: unset; }
     }
 </style>
