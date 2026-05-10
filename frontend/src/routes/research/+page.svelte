@@ -155,15 +155,13 @@
     <p class="subtext">—</p>
 {:else}
     <div class="list">
-        {#each recentJobs as j}
+        {#each recentJobs.filter(j => !(j.status === 'completed' && !j.catalog_id)) as j}
             <button class="job-row" onclick={() => pickJob(j)}>
                 <span class="badge {j.status}">{statusLabel(j.status)}</span>
                 <span class="topic">{j.topic}</span>
                 <span class="when">{new Date(j.created_at).toLocaleString()}</span>
                 {#if j.status === 'completed' && j.catalog_id}
                     <a href="/catalogs/{j.catalog_id}" onclick={(e) => e.stopPropagation()} class="open-link">{t('open')}</a>
-                {:else if j.status === 'completed' && !j.catalog_id}
-                    <span class="badge deleted">{t('catalog_deleted')}</span>
                 {/if}
             </button>
         {/each}
