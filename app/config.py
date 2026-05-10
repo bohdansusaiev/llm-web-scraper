@@ -26,7 +26,7 @@ CORE_API_KEY = os.getenv("CORE_API_KEY", "")  # core.ac.uk — 200M+ open access
 # --- Pipeline tuning ---
 DEFAULT_DISCOVERY_LIMIT = 30      # per provider, before merge
 DEFAULT_MAX_PAPERS = 10           # how many papers Phase 2 deeply extracts
-RELEVANCE_THRESHOLD = 0.4         # below this = drop
+RELEVANCE_THRESHOLD = 0.4
 CRAWLER_TIMEOUT_MS = 45_000
 CRAWLER_WORD_THRESHOLD = 10
 HTTP_TIMEOUT = 30.0
