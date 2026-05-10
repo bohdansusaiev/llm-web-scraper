@@ -220,7 +220,7 @@
     .paper-summary:hover { background: var(--button-hover); }
     .paper-card.open .paper-summary { background: transparent; }
 
-    .paper-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
+    .paper-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; padding-right: 24px; }
     .paper-head-text { flex: 1; }
     .paper-thumb {
         width: 64px; height: 64px; flex-shrink: 0;

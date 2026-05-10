@@ -79,27 +79,50 @@ async def discover(
 
 
 def _dedupe(papers: list[DiscoveredPaper]) -> list[DiscoveredPaper]:
-    """Merge duplicates by DOI first, then by normalized title."""
-    by_key: dict[str, DiscoveredPaper] = {}
+    """Merge duplicates: pass 1 by DOI, pass 2 by normalized title."""
+    # Pass 1: group by DOI
+    by_doi: dict[str, DiscoveredPaper] = {}
+    no_doi: list[DiscoveredPaper] = []
     for p in papers:
-        key = p.doi if p.doi else f"title::{normalize_title(p.title)}"
-        if not key.replace("title::", "").strip():
-            continue  # empty key — drop record
-        existing = by_key.get(key)
-        if existing is None:
-            by_key[key] = p
+        if p.doi:
+            existing = by_doi.get(p.doi)
+            by_doi[p.doi] = _merge(existing, p) if existing else p
         else:
-            by_key[key] = _merge(existing, p)
-    return list(by_key.values())
+            no_doi.append(p)
+
+    # Pass 2: group by title (catches same paper with different DOIs, e.g. JMLR + arXiv)
+    by_title: dict[str, DiscoveredPaper] = {}
+    for p in list(by_doi.values()) + no_doi:
+        key = normalize_title(p.title)
+        if not key:
+            continue
+        existing = by_title.get(key)
+        by_title[key] = _merge(existing, p) if existing else p
+    return list(by_title.values())
+
+
+def _authors_look_proper(authors: list[str]) -> bool:
+    return bool(authors) and all(" " in name for name in authors)
 
 
 def _merge(a: DiscoveredPaper, b: DiscoveredPaper) -> DiscoveredPaper:
     """Combine two records of the same paper, preferring richer fields."""
+    # Prefer author list where names have spaces (e.g. "Fabian Pedregosa")
+    # over concatenated ones (e.g. "PedregosaFabian") from some APIs.
+    a_proper = _authors_look_proper(a.authors)
+    b_proper = _authors_look_proper(b.authors)
+    if a_proper and not b_proper:
+        best_authors = a.authors
+    elif b_proper and not a_proper:
+        best_authors = b.authors
+    else:
+        best_authors = a.authors if len(a.authors) >= len(b.authors) else b.authors
+
     return DiscoveredPaper(
         source=f"{a.source}+{b.source}" if a.source != b.source else a.source,
         doi=a.doi or b.doi,
         title=a.title if len(a.title) >= len(b.title) else b.title,
-        authors=a.authors if len(a.authors) >= len(b.authors) else b.authors,
+        authors=best_authors,
         publication_year=a.publication_year or b.publication_year,
         venue=a.venue or b.venue,
         abstract=a.abstract if len(a.abstract) >= len(b.abstract) else b.abstract,
