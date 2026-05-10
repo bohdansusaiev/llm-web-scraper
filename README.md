@@ -2,32 +2,19 @@
 
 Adaptive web scraping with Large Language Models.
 
-A research agent that builds catalogs of scientific literature on any topic.
-Plus a generic LLM scraping endpoint and a comparative benchmark vs. classical
-methods (trafilatura + BeautifulSoup).
+A research agent that builds catalogs of scientific literature on any topic. Plus a generic LLM scraping and a comparative benchmark vs. classical methods (trafilatura + BeautifulSoup).
 
 ## What it does
 
-1. **Discovery** — queries OpenAlex / Crossref / Semantic Scholar (open science APIs) for a topic, dedupes by DOI.
-2. **Relevance filter** — one LLM call ranks all candidates against the topic.
-3. **Deep extraction** — Crawl4AI fetches each top paper's open-access URL → markdown → DeepSeek extracts methodology, conclusions, keywords.
-4. **Translation (optional)** — separate LLM call renders text fields in Ukrainian.
-5. **Persistence** — saves the catalog to SQLite. Export as JSON / CSV / BibTeX.
-
-The same engine is exposed at `POST /scrape` — pass any URL + JSON schema and
-the LLM returns structured data.
+1. **Discovery** - queries OpenAlex / Crossref / Semantic Scholar (open science APIs) for a topic, dedupes by DOI.
+2. **Relevance filter** - one LLM call ranks all candidates against the topic.
+3. **Deep extraction** - Crawl4AI fetches each top paper's open-access URL, converts to markdown, DeepSeek extracts methodology, conclusions, keywords.
+4. **Translation (optional)** - separate LLM call renders text fields in Ukrainian.
+5. **Persistence** - saves the catalog to SQLite. Export as JSON / CSV / BibTeX.
 
 ## Why it's "adaptive"
 
-Classical scrapers use CSS selectors, which break when site layout changes and
-need per-site configuration. This system extracts clean markdown with Crawl4AI
-and lets the LLM extract data semantically. **One implementation handles arXiv,
-PubMed Central, publisher pages, university repositories, and any URL the user
-points it at — without code changes.**
-
-The included `POST /benchmark` endpoint quantifies the gain: classical extraction
-typically gets 4–5/9 fields with broken author parsing; LLM extraction gets 8/9
-including methodology and conclusions that classical methods cannot infer at all.
+Classical scrapers use CSS selectors, which break when site layout changes and need per-site configuration. This system extracts clean markdown with Crawl4AI and lets the LLM extract data semantically. One implementation handles arXiv, PubMed Central, publisher pages, university repositories, and any URL the user points it at - without code changes.
 
 ## Run locally
 
