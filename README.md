@@ -1,84 +1,79 @@
 # LLM-Scraper
 
-Adaptive web scraping with Large Language Models.
+Система адаптивного збору наукових даних на основі великих мовних моделей (LLM).
 
-A research agent that builds catalogs of scientific literature on any topic. Plus a generic LLM scraping and a comparative benchmark vs. classical methods (trafilatura + BeautifulSoup).
+## Опис
 
-## What it does
+Веб-застосунок для автоматизованого пошуку, фільтрації та структурованого вилучення інформації з наукових публікацій. Підтримує три режими роботи:
 
-1. **Discovery** - queries OpenAlex / Crossref / Semantic Scholar (open science APIs) for a topic, dedupes by DOI.
-2. **Relevance filter** - one LLM call ranks all candidates against the topic.
-3. **Deep extraction** - Crawl4AI fetches each top paper's open-access URL, converts to markdown, DeepSeek extracts methodology, conclusions, keywords.
-4. **Translation (optional)** - separate LLM call renders text fields in Ukrainian.
-5. **Persistence** - saves the catalog to SQLite. Export as JSON / CSV / BibTeX.
+- **Дослідницький** — паралельний пошук статей у п'яти відкритих академічних базах (OpenAlex, Semantic Scholar, arXiv, CORE, Crossref), оцінка релевантності через LLM, глибоке вилучення методології, висновків та ключових слів
+- **Універсальний збирач** — вилучення структурованих даних з довільної веб-сторінки за описаною користувачем схемою
+- **Бенчмарк** — порівняння LLM-підходу з класичними методами (trafilatura + BeautifulSoup)
 
-## Why it's "adaptive"
+## Системні вимоги
 
-Classical scrapers use CSS selectors, which break when site layout changes and need per-site configuration. This system extracts clean markdown with Crawl4AI and lets the LLM extract data semantically. One implementation handles arXiv, PubMed Central, publisher pages, university repositories, and any URL the user points it at - without code changes.
+| Компонент | Вимога |
+|-----------|--------|
+| ОС | Linux / macOS / Windows 10+ |
+| Python | 3.11 або новіший |
+| Node.js | 18 або новіший |
+| База даних | SQLite (вбудована у Python, не потребує окремої установки) |
 
-## Run locally
+**API-ключі** (безкоштовна реєстрація):
+- `DEEPSEEK_API_KEY` — [api-docs.deepseek.com](https://api-docs.deepseek.com/)
+- `CORE_API_KEY` *(опціонально)* — [core.ac.uk/services/api](https://core.ac.uk/services/api)
 
-You'll need a **DeepSeek API key** (`DEEPSEEK_API_KEY`) for LLM extraction and a
-**CORE API key** (`CORE_API_KEY`) for open-access paper URLs. Both are free to get.
+## Встановлення та запуск
 
 ```bash
-# Backend
+# 1. Клонувати репозиторій
+git clone https://github.com/bohdansusaiev/llm-web-scraper.git
+cd llm-web-scraper
+
+# 2. Встановити залежності бекенду
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env  # fill in DEEPSEEK_API_KEY and CORE_API_KEY
+
+# 3. Налаштувати змінні середовища
+cp .env.example .env
+# Відкрити .env і вказати DEEPSEEK_API_KEY (і за потреби CORE_API_KEY)
+
+# 4. Встановити залежності фронтенду
+cd frontend && npm install && cd ..
+
+# 5. Запустити бекенд (термінал 1)
 uvicorn app.main:app --reload --port 8000
 
-# Frontend (separate terminal)
-cd frontend
-npm install
-npm run dev  # http://localhost:5173
+# 6. Запустити фронтенд (термінал 2)
+cd frontend && npm run dev
 ```
 
-Open http://localhost:5173, register an account, and start a research job.
+Відкрити у браузері: **http://localhost:5173** → зареєструвати акаунт → розпочати дослідження.
 
-## Project layout
+## Бібліотеки та технологічний стек
+
+| Рівень | Технологія |
+|--------|-----------|
+| Бекенд | Python 3.11, FastAPI, asyncio, Pydantic v2 |
+| LLM | DeepSeek API (OpenAI-сумісний інтерфейс) |
+| Веб-сканування | Crawl4AI (headless Chromium через Playwright) |
+| База даних | SQLite (вбудована) |
+| Фронтенд | SvelteKit, TypeScript |
+| Класичний baseline | trafilatura, BeautifulSoup4 |
+| Наукові API | OpenAlex, Semantic Scholar, arXiv, CORE, Crossref |
+
+## Структура проекту
 
 ```
 app/
-  main.py                 FastAPI entry point
-  config.py               env vars, model config, pipeline tuning
-  models/                 Pydantic schemas (request/response + domain)
-    catalog.py            ScientificPaper, ScientificCatalog, ResearchRequest
-    discovery.py          DiscoveredPaper (raw API output)
-    extraction.py         GenericExtractRequest/Response
-    benchmark.py          BenchmarkRequest, ScraperResult, etc.
-    jobs.py               ResearchJob status tracking
-    auth.py
-  routers/                FastAPI routes — thin, no business logic
-    auth.py, scrape.py, research.py, catalogs.py, benchmark.py, export.py
-  core/                   Generic LLM extraction engine — heart of the diploma
-    crawler.py            Crawl4AI wrapper (URL -> markdown)
-    llm_extractor.py      Schema-driven extract via DeepSeek-chat
-    prompts.py            Prompt templates
+  core/           LLM-рушій: crawler.py, llm_extractor.py, prompts.py
   services/
-    discovery/            Phase 1 — scientific API clients
-      openalex.py, crossref.py, semantic_scholar.py, aggregator.py
-    extraction/           Phase 2 — LLM relevance scoring + deep extraction
-      relevance.py, paper_extractor.py, translator.py
-    pipeline.py           Phase 1 + 2 + Translation orchestration
-    generic_extract.py    Service for POST /scrape
-    classical_scraper.py  trafilatura+BS4 baseline
-    benchmark.py          Side-by-side LLM vs classical
-  db/                     SQLite layer
-    schema.py, connection.py, users.py, catalogs.py, jobs.py, cache.py
-  utils/
-    dedupe.py             DOI / title normalization
-    exporters.py          JSON / CSV / BibTeX
-frontend/                 SvelteKit — Research / Catalogs / Scrape / Benchmark / About
+    discovery/    Клієнти наукових API (openalex, crossref, semantic_scholar, ...)
+    extraction/   Оцінка релевантності та глибоке вилучення
+    pipeline.py   Головний конвеєр обробки
+  routers/        HTTP-ендпоінти FastAPI
+  db/             SQLite-шар (schema, catalogs, jobs, cache)
+  models/         Pydantic-схеми
+frontend/         SvelteKit-застосунок (Research / Scrape / Benchmark / Catalogs)
 ```
-
-## Stack
-
-- **Python + FastAPI** — async backend
-- **Crawl4AI** — JS rendering and HTML→markdown conversion
-- **DeepSeek-chat** — LLM (\$0.27/\$1.10 per 1M tokens; ~\$0.025 per research query)
-- **OpenAlex / Crossref / Semantic Scholar** — open scientific APIs
-- **trafilatura + BeautifulSoup** — classical baseline for the benchmark
-- **SQLite** — local store for catalogs, jobs, and the URL+schema extraction cache
-- **SvelteKit** — frontend with EN/UA i18n
